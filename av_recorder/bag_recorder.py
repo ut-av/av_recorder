@@ -34,7 +34,7 @@ class BagRecorder(Node):
         # Default topics to record
         self.topics_to_record = [
             '/scan',
-            '/camera_0/image_raw',
+            '/camera_0/image_raw/compressed',
             '/ackermann_curvature_drive',
             '/car_status',
             '/joystick',
