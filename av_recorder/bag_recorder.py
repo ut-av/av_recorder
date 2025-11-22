@@ -21,8 +21,7 @@ class BagRecorder(Node):
     """Node for managing ROS2 bag recording with topic filtering."""
     
     # PS4 Controller button mappings
-    BUTTON_TRIANGLE = 3  # Green triangle - start recording
-    BUTTON_SQUARE = 2    # Red square - stop recording
+    BUTTON_CIRCLE = 1  # Red circle - toggle recording
     
     def __init__(self):
         super().__init__('bag_recorder')
@@ -44,7 +43,7 @@ class BagRecorder(Node):
         ]
         
         # Storage location for bags
-        self.bag_storage_path = os.path.expanduser('~/rosbag_recordings')
+        self.bag_storage_path = os.path.expanduser('~/roboracer_ws/data/rosbags')
         if not os.path.exists(self.bag_storage_path):
             os.makedirs(self.bag_storage_path)
         
@@ -86,9 +85,8 @@ class BagRecorder(Node):
         # Publish status and topic list periodically
         self.status_timer = self.create_timer(0.5, self.publish_status)
         
-        # Track previous joystick button states
-        self.prev_triangle = 0
-        self.prev_square = 0
+        # Track previous joystick button state
+        self.prev_circle = 0
         
         self.get_logger().info('Bag Recorder Node initialized')
         self.get_logger().info(f'Recording directory: {self.bag_storage_path}')
@@ -103,24 +101,23 @@ class BagRecorder(Node):
     
     def joystick_callback(self, msg):
         """Handle joystick input for PS4 controller recording control."""
-        if len(msg.buttons) <= max(self.BUTTON_TRIANGLE, self.BUTTON_SQUARE):
+        if len(msg.buttons) <= self.BUTTON_CIRCLE:
             return
         
         # Detect button press (transition from 0 to 1)
-        triangle_pressed = msg.buttons[self.BUTTON_TRIANGLE] == 1 and self.prev_triangle == 0
-        square_pressed = msg.buttons[self.BUTTON_SQUARE] == 1 and self.prev_square == 0
+        circle_pressed = msg.buttons[self.BUTTON_CIRCLE] == 1 and self.prev_circle == 0
         
-        # Update previous states
-        self.prev_triangle = msg.buttons[self.BUTTON_TRIANGLE]
-        self.prev_square = msg.buttons[self.BUTTON_SQUARE]
+        # Update previous state
+        self.prev_circle = msg.buttons[self.BUTTON_CIRCLE]
         
-        # Handle button presses
-        if triangle_pressed and not self.is_recording:
-            self.get_logger().info('Triangle button pressed - starting recording')
-            self.start_recording()
-        elif square_pressed and self.is_recording:
-            self.get_logger().info('Square button pressed - stopping recording')
-            self.stop_recording()
+        # Toggle recording on circle button press
+        if circle_pressed:
+            if self.is_recording:
+                self.get_logger().info('Circle button pressed - stopping recording')
+                self.stop_recording()
+            else:
+                self.get_logger().info('Circle button pressed - starting recording')
+                self.start_recording()
     
     def set_topics_callback(self, msg):
         """Handle topic list updates via /recorder/set_topics."""
