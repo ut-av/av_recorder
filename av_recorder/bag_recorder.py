@@ -39,7 +39,9 @@ class BagRecorder(Node):
             '/car_status',
             '/joystick',
             '/imu',
-            '/odom'
+            '/odom',
+            '/tf',
+            '/tf_static'
         ]
         
         # Storage location for bags
